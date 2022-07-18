@@ -1,0 +1,123 @@
+from django.conf.urls import url, include
+from django.contrib.auth import views as django_views
+
+from . import views
+#from .shop.urls import urlpatterns as shop_urls
+
+urlpatterns = [
+    url(r'^$', views.details, name='details'),
+    url(r'^shop/add/$',
+        views.shop_add, name='shop-add'),
+    url(r'^shop/(?P<pk>[0-9]+)/$',
+        views.shop_details, name='shop-details'),
+    url(r'^shop/(?P<pk>[0-9]+)/update/$',
+        views.shop_edit, name='shop-update'),
+    url(r'^shop/(?P<pk>[0-9]+)/products/add/select-type/$',
+        views.product_select_type, name='product-add-select-type'),
+    url(r'^shop/(?P<shop_pk>[0-9]+)/products/add/(?P<type_pk>[0-9]+)/$',
+        views.product_create, name='product-add'),    
+    url(r'^shop/(?P<pk>[0-9]+)/orders/$',
+        views.shop_orders, name='shop-orders'),
+    url(r'^shop/(?P<pk>[0-9]+)/customers/$',
+        views.shop_customers, name='shop-customers'),
+    url(r'^shop/(?P<pk>[0-9]+)/orders/(?P<sub_order_pk>\d+)/$',
+        views.shop_order_details, name='shop-order-details'),
+    url(r'^shop/(?P<pk>[0-9]+)/product/(?P<product_pk>\d+)/$',
+        views.shop_product_details, name='shop-product-details'),
+    url(r'^shop/(?P<shop_pk>[0-9]+)/product/(?P<pk>[0-9]+)/update/$',
+        views.product_edit, name='product-update'),
+    #url(r'^shop/add/shop-add-category/$',
+        #views.shop_add_category, name='shop-add-category'),
+    url(r'^login/$', views.login, name='login'),
+    url(r'^logout/$', views.logout, name='logout'),
+    url(r'^signup/$', views.signup, name='signup'),
+    url(r'^password/reset/$', views.password_reset,
+        name='reset-password'),
+    url(r'^password/reset/done/$', django_views.PasswordResetDoneView.as_view(
+        template_name='account/password_reset_done.html'),
+        name='reset-password-done'),
+    url(r'^password/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',  # noqa
+        views.password_reset_confirm, name='reset-password-confirm'),
+    url(r'password/reset/complete/$', django_views.PasswordResetCompleteView.as_view(  # noqa
+        template_name='account/password_reset_from_key_done.html'),
+        name='reset-password-complete'),
+
+    url(r'^address/(?P<pk>\d+)/edit/$', views.address_edit,
+        name='address-edit'),
+    url(r'^address/(?P<pk>\d+)/delete/$',
+        views.address_delete, name='address-delete'),
+    url(r'^delete/$', views.account_delete,
+        name='delete'),
+    url(r'^(?P<token>[0-9A-Za-z_\-]+)/delete-confirm/',
+        views.account_delete_confirm, name='delete-confirm'),
+    #
+    url(r'^product/(?P<pk>[0-9]+)/publish/$',
+        views.product_toggle_is_published, name='product-publish'),
+    
+    
+   
+    url(r'^product/(?P<pk>[0-9]+)/delete/$',
+        views.product_delete, name='product-delete'),
+    url(r'^product/bulk-update/$',
+        views.product_bulk_update, name='product-bulk-update'),
+    url(r'^product/ajax/products/$',
+        views.ajax_products_list, name='ajax-products'),
+
+    url(r'^product/types/$',
+        views.product_type_list, name='product-type-list'),
+    url(r'^product/types/add/$',
+        views.product_type_create, name='product-type-add'),
+    url(r'^product/types/(?P<pk>[0-9]+)/update/$',
+        views.product_type_edit, name='product-type-update'),
+    url(r'^product/types/(?P<pk>[0-9]+)/delete/$',
+        views.product_type_delete, name='product-type-delete'),
+
+    url(r'^product/(?P<product_pk>[0-9]+)/variants/(?P<variant_pk>[0-9]+)/$',
+        views.variant_details, name='variant-details'),
+    url(r'^product/(?P<product_pk>[0-9]+)/variants/add/$',
+        views.variant_create, name='variant-add'),
+    url(r'^product/(?P<product_pk>[0-9]+)/variants/(?P<variant_pk>[0-9]+)/update/$',
+        views.variant_edit, name='variant-update'),
+    url(r'^product/(?P<product_pk>[0-9]+)/variants/(?P<variant_pk>[0-9]+)/delete/$',
+        views.variant_delete, name='variant-delete'),
+    url(r'^product/(?P<product_pk>[0-9]+)/variants/(?P<variant_pk>[0-9]+)/images/$',
+        views.variant_images, name='variant-images'),
+    url(r'^product/ajax/variants/$',
+        views.ajax_available_variants_list, name='ajax-available-variants'),
+
+    url(r'^product/(?P<product_pk>[0-9]+)/images/$',
+        views.product_images, name='product-image-list'),
+    url(r'^product/(?P<product_pk>[0-9]+)/images/add/$',
+        views.product_image_create, name='product-image-add'),
+    url(r'^product/(?P<product_pk>[0-9]+)/images/(?P<img_pk>[0-9]+)/$',
+        views.product_image_edit, name='product-image-update'),
+    url(r'^product/(?P<product_pk>[0-9]+)/images/(?P<img_pk>[0-9]+)/delete/$',
+        views.product_image_delete, name='product-image-delete'),
+    url(r'^product/(?P<product_pk>[0-9]+)/images/reorder/$',
+        views.ajax_reorder_product_images, name='product-images-reorder'),
+    url(r'^product/(?P<product_pk>[0-9]+)/images/upload/$',
+        views.ajax_upload_image, name='product-images-upload'),
+
+    url(r'attributes/$',
+        views.attribute_list, name='attributes'),
+    url(r'attributes/(?P<pk>[0-9]+)/$',
+        views.attribute_details, name='attribute-details'),
+    url(r'attributes/add/$',
+        views.attribute_create, name='attribute-add'),
+    url(r'attributes/(?P<pk>[0-9]+)/update/$',
+        views.attribute_edit, name='attribute-update'),
+    url(r'attributes/(?P<pk>[0-9]+)/delete/$',
+        views.attribute_delete, name='attribute-delete'),
+    url(r'attributes/(?P<attribute_pk>[0-9]+)/value/add/$',
+        views.attribute_value_create,
+        name='attribute-value-add'),
+    url(r'attributes/(?P<attribute_pk>[0-9]+)/value/(?P<value_pk>[0-9]+)/update/$',  # noqa
+        views.attribute_value_edit,
+        name='attribute-value-update'),
+    url(r'attributes/(?P<attribute_pk>[0-9]+)/value/(?P<value_pk>[0-9]+)/delete/$',  # noqa
+        views.attribute_value_delete,
+        name='attribute-value-delete'),
+    url(r'attributes/(?P<attribute_pk>[0-9]+)/values/reorder/$',
+        views.ajax_reorder_attribute_values,
+        name='attribute-values-reorder')]
+	#url(r'^shop/', include(shop_urls))]

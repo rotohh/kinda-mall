@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load bootstrap_form from bootstrap4 %}
+{% load i18n %}
+{% load price from taxed_prices %}
+{% load i18n_address_tags %}
+{% load price from taxed_prices %}
+
+{% block title %}
+    {% trans "Orders" context "New address page title" %}
+     — {{ block.super }}
+{% endblock %}
+
+{% block breadcrumb %}
+  <ul class="breadcrumbs list-unstyled">
+    <li>
+      <a href="{% url 'home' %}">
+        {% trans "Home" context "Main navigation item" %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url "account:details" %}">
+        {% trans "Your profile" context "Edit/new address breadcrumb" %}
+      </a>
+    </li>
+    <li>
+        <a href=".">
+          {% trans "Order Details" context "Edit address breadcrumb" %}
+        </a>
+    </li>
+    
+   </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+ 
+      
+        <h2 class="text-center">
+            {% trans "Order Details" context "Edit address title" %}
+        </h2>
+		
+	   <div class="row tab-content" id="order-details">
+		<div class="col s12 l8 switch-two-columns">
+			<div class="card shipment-table">
+			  <div class="data-table-header">
+			   <div class="data-table-title">
+				<h5>
+					{% blocktrans trimmed with order=suborder.order_id suborder=suborder.id context "Order table title"  %}
+						Order #{{ order }}-{{suborder}}
+					{% endblocktrans %}
+				</h5>
+				<h6>
+					  {% trans "Placed on" context "Order placed on date" %} {{ suborder.order.created }}
+				</h6>
+			   </div>
+			 </div>
+			 <div class="data-table-container">
+			  <table class="bordered highlight responsive data-table">
+				<thead>
+				  <tr>
+					<th class="wide">
+					  {% trans "Item" context "Order table header" %}
+					</th>
+					<th class="right-align">
+					  {% trans "Price" context "Order table header" %}
+					</th>
+					<th class="right-align">
+					  {% trans "Quantity" context "Order table header" %}
+					</th>
+					<th class="right-align">
+					  {% trans "Total" context "Order table header" %}
+					</th>
+				  </tr>
+				</thead>
+				<tbody>
+				
+				  {% for orderitem in orderitems %}
+				   <tr class="last-no-border">
+					<td>
+					   {{ orderitem.product_name }}
+					<br>
+					<span class="grey-text">
+						  {% blocktrans trimmed with sku=orderitem.product_sku context "Order table text" %}
+							SKU: {{ sku }}
+						  {% endblocktrans %}
+					</span>
+					</td>
+					<td class="right-align">
+						{% price orderitem.unit_price suborder.order.display_gross_prices %}
+					</td>
+					<td class="right-align">
+					  {{ orderitem.quantity }}
+					</td>
+					<td class="right-align">
+						{% price orderitem.get_total display_gross=suborder.order.display_gross_prices %}
+					</td>
+				   </tr>
+				  {% endfor %}
+				   <tr class="last-no-border">
+					<td class="right-align" colspan="3">
+					  <p>
+						<strong>{% trans "Subtotal" context "Order subtotal" %}</strong>
+					  </p>
+					  
+					</td>
+					<td class="right-align">
+					  <p>
+						{% price suborder.amount.gross %}
+					  </p>
+					 
+					</td>
+				   </tr>
+			    </tbody>
+			  </table>
+			 </div>
+			</div>
+			<div class="card order-notes{% if not suborder.order.customer_note %} print-hide{% endif %}" id="customer-note">
+				<div class="card-content">
+				  <span class="card-title black-text">
+					{% trans "Customer note" context "Customer order note card title" %}
+				  </span>
+				  {% if suborder.order.customer_note %}
+					<p>{{ suborder.order.customer_note }}</p>
+				  {% else %}
+					<p>
+					  {% trans "There is no note from the customer associated with this order." context "No customer order note card message" %}
+					</p>
+				  {% endif %}
+				</div>
+			</div>			
+		</div>
+		<div class="col s12 l4 switch-two-columns">
+			<div class="card">
+			 <div class="data-table-header">
+			  <h5 class="data-table-title">
+				{% trans "Payments" context "Order summary card header" %}
+			  </h5>
+			 </div>
+			</div>
+		
+			<div class="row">
+			 <div class="col s12 {% if suborder.order.shipping_address %}m6{% else %}m12{% endif %} l12 p6">
+			  <div class="card">
+				<div class="card-content card-border">
+				  <span class="card-title black-text">
+					{% trans "Customer" context "Order details summary header" %}
+				  </span>
+				  {% if suborder.order.user %}
+					<a>{{ suborder.order.user }}</a>
+					{% if suborder.order.user.get_full_name != suborder.order.user.email %}
+					  <p>{{ suborder.order.user.get_full_name|truncatechars:80 }}</p>
+					{% endif %}
+					{% if suborder.order.user.note %}
+					  <p>{{ suborder.order.user.note|truncatechars:80 }}</p>
+					{% endif %}
+				  {% elif suborder.order.user_email %}
+					{{ suborder.order.user_email }}
+				  {% else %}
+					{% trans "Guest" context "Anonymous user account value" %}
+				  {% endif %}
+				</div>
+				{% if suborder.order.is_shipping_required or suborder.order.is_draft %}
+				  <div class="card-content card-border">
+					<span class="card-title black-text">
+					  {% trans "Shipping address" context "" %}
+					  
+					</span>
+					{% if suborder.order.shipping_address %}
+					  {% format_address suborder.order.shipping_address %}
+					{% else %}
+					  {% trans "No shipping address" context "Missing shipping address message" %}
+					{% endif %}
+				  </div>
+				{% endif %}
+				<div class="card-content">
+				  <span class="card-title black-text">
+					{% trans "Billing address" context "" %}
+					
+				  </span>
+				  {% if suborder.order.billing_address %}
+					{% if suborder.order.billing_address == suborder.order.shipping_address %}
+					  {% trans "Same as shipping address" context "Order billing address same as shipping address" %}
+					{% else %}
+					  {% format_address suborder.order.billing_address %}
+					{% endif %}
+				  {% else %}
+					{% trans "No billing address" context "Missing billing address message" %}
+				  {% endif %}
+				</div>
+			  </div>
+			 </div>
+		    </div>
+	    </div>
+	   </div>
+    
+{% endblock content %}

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load bootstrap_form from bootstrap4 %}
+{% load bootstrap_pagination from bootstrap4 %}
+{% load i18n %}
+{% load static %}
+{% load materializecss %}
+{% load render_bundle from webpack_loader %}
+{% load price from taxed_prices %}
+{% load get_product_image_thumbnail from product_images %}
+{% load utils %}
+{% load placeholder %}
+{% load status %}
+
+{% block title %}
+    {% trans "Your Shop" context "New address page title" %}
+     — {{ block.super }}
+{% endblock %}
+
+{% block breadcrumb %}
+  <ul class="breadcrumbs list-unstyled">
+    <li>
+      <a href="{% url 'home' %}">
+        {% trans "Home" context "Main navigation item" %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url "account:details" %}">
+        {% trans "Your profile" context "Edit/new address breadcrumb" %}
+      </a>
+    </li>
+	<li>
+      <span class="breadcrumbs--ellipsed-item">
+        {% trans "Shop" context "Main navigation item" %}
+      </span>
+    </li>
+    <li>
+      <span class="breadcrumbs--ellipsed-item">
+        {{ shop }}
+      </span>
+    </li>
+   </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="account">
+    <div class="account__nav container">
+	   <h2>{{ shop }}</h2>
+	   {% if shop.description %}<h3 class="text-sm-center"><p> {{shop.description}}</p></h3>{% endif %}
+	   {% if shop.city %}<h3 class="text-sm-center"><p> {{shop.city}}</p></h3>{% endif %}
+	   {% if shop.street_address %}<h3 class="text-sm-center"><p> {{shop.street_address}}</p></h3>{% endif %}
+	   {% if shop.link %}<h3 class="text-sm-center"><p> {{shop.link}}</p></h3>{% endif %}
+	   {% if shop.phone %}<h3 class="text-sm-center"><p>Shop's Phone: {{shop.phone}}</p></h3>{% endif %}
+	    <ul class="nav nav-tabs col-lg-11 m-auto" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#products" role="tab">
+            <h3>{% trans "Home" context "User profile tab" %}</h3>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " data-toggle="tab" href="#orders" role="tab">
+            <h3>{% trans "Orders" context "User profile tab" %}</h3>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#payments" role="tab">
+            <h3>{% trans "Order Payments" context "User profile tab" %}</h3>
+          </a>
+        </li>
+		<li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#settings" role="tab">
+            <h3>{% trans "Edit Shop" context "User profile tab" %}</h3>
+          </a>
+        </li>
+        </ul>
+    </div>   
+    <div class="d-block mx-auto text-center">
+	  <div class="row">
+		{% if product_types %}
+		  <div class="btn-fab-fixed">
+			{% if product_types|length > 1 %}
+			  <form action="{% url "account:product-add-select-type" shop.pk %}" method="post">
+			   {% csrf_token %}
+			   <button type="submit" class="btn narrow text-center">
+				{% trans "Add Product" context "Create your shop form action" %}
+			   </button>
+			  </form>
+			{% else %}
+			  <form action="{% url 'account:product-add' shop_pk.pk product_types.0.pk  %}" method="post">
+			   {% csrf_token %}
+			   <button type="submit" class="btn narrow text-center">
+				{% trans "Add Product" context "Create your shop form action" %}
+			   </button>
+			  </form>
+			{% endif %}
+		  </div>
+		{% endif %}	   
+	  </div>
+	</div>   
+	<div class="tab-content col-lg-10 m-auto">
+	  <div class="tab-pane active fade show" id="products" role="tabpanel">
+	   <div id="accordion" role="tablist" aria-multiselectable="true">
+		<div class="home">
+		  {% if products %}
+		   <div class="home__featured">
+			<div class="row">
+			  {% for product in products %}
+			   <div class="col-6 col-lg-3 product-list">
+				<a href="{% url 'account:shop-product-details' pk=shop.pk product_pk=product.pk %}" class="link--clean">
+				  <div class="text-center">
+					<div>
+					  <div class="product-image">
+						<img class="img-responsive lazyload lazypreload"
+							 data-src="{% get_product_image_thumbnail product.get_first_image method="thumbnail" size=200 %}"
+							 data-srcset="{% get_product_image_thumbnail product.get_first_image method="thumbnail" size=200 %} 1x, {% get_product_image_thumbnail product.get_first_image method="thumbnail" size=200 %} 2x"
+							 alt=""
+							 src="{% placeholder size=200 %}">
+					  </div>
+					 <span class="product-list-item-name" title="{{ product.translated }}">{{ product.translated }}</span>
+					</div>
+					<div class="panel-footer">
+					{% price product.price %}
+					</div>
+				  </div>
+			    </a>
+			  </div>
+			 {% endfor %}			  
+			</div>
+		  </div>
+		 {% endif %}
+		 <div class="row mt-4">
+              <div class="m-auto">
+                {% if products.has_other_pages %}
+                  {% bootstrap_pagination products extra=request.GET.urlencode %}
+                {% endif %}
+              </div>
+            </div>
+		 
+		</div>
+	   </div>
+	  </div>   
+	  <div class="tab-pane fade" id="orders" role="tabpanel">
+		<div id="accordion" role="tablist" aria-multiselectable="true">
+          
+		  {% if suborders %}
+            <div class="table__header">
+              <div class="row">
+                <div class="col-md-1 col-3">
+                  <small>{% trans "Order" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-3 d-none d-md-block">
+                  <small>{% trans "Placed On" context "Recent orders column title" %}</small>
+                </div>
+				<div class="col-md-3 d-none d-md-block">
+                  <small>{% trans "Customer" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-1 col-4 text-right">
+                  <small>{% trans "Total" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-3 d-none d-md-block">
+                  <small>{% trans "Payment Status" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-1 col-5"></div>
+              </div>
+            </div>
+            {% for suborder in suborders %}
+              <div class="table__row">
+                <div class="row">
+                  <div class="col-md-1 col-3">
+                    {{ suborder.id }}
+                  </div>
+                  <div class="col-md-3 d-none d-md-block">
+                    {{ suborder.order.created }}
+                  </div>
+				  <div class="col-md-3 d-none d-md-block">
+                    {% trans "Guest" context "Anonymous user account value" as guest %}
+					  {{ suborder.order.user|default:guest }}
+				  </div>
+                  <div class="col-md-1 col-4">
+                    <span class="float-right">
+					    {% price suborder.amount.gross %}
+                    </span>
+                  </div>
+                  <div class="col-md-3 d-none d-md-block">
+                    {% render_status suborder.order.get_payment_status suborder.order.get_payment_status_display %}
+                  </div>
+                  <div class="col-md-1 col-5">
+                    <a href="{% url 'account:shop-order-details' pk=shop.pk sub_order_pk=suborder.pk %}" class="float-right link--styled">
+                      {% trans "Details" context "Recent orders link text" %}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+            <div class="row mt-4">
+              <div class="m-auto">
+                {% if suborders.has_other_pages %}
+                  {% bootstrap_pagination suborders extra=request.GET.urlencode %}
+                {% endif %}
+              </div>
+            </div>
+          {% else %}
+            <h3 class="text-sm-center account__orders-empty">
+              {% trans "There are not any completed orders yet." context "No recent orders text" %}
+            </h3>
+          {% endif %}
+        </div>
+	  </div>
+	  <div class="tab-pane fade" id="payments" role="tabpanel">
+		<div class="row ">
+		  <div class="col-md-8 col-lg-6 m-auto account__password">
+			  huraa
+		  </div>
+		</div>
+	  </div>
+	  <div class="tab-pane fade" id="settings" role="tabpanel">
+		
+		     <div class="row account__address-edit">
+				<div class="col-sm-8 col-lg-6 m-auto">
+				  <form method="post" novalidate>
+					{% csrf_token %}
+					<h2 class="text-center">
+						{% if shop_form.instance.pk %}
+						 {% trans "Edit shop" context "Edit address title" %}
+						{% else %}
+						 {% trans "New shop" context "New address title" %}
+						{% endif %}
+					</h2>
+					{% bootstrap_form shop_form %}
+					<p class="text-right">
+					  <button type="submit" class="btn btn-primary narrow">
+						{% trans "Save changes" context "Edit/new address primary action" %}
+					  </button>
+					</p>
+				  </form>
+				</div>
+			  </div>
+		  
+	  </div>	
+    </div>
+ </div>
+
+
+{% endblock content %}

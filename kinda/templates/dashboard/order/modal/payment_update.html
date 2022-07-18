@@ -1,0 +1,42 @@
+{% extends "dashboard/base_modal.html" %}
+
+{% load i18n %}
+{% load babel %}
+{% load dashboard %}
+{% load i18n %}
+{% load i18n_address_tags %}
+{% load materializecss %}
+{% load static %}
+{% load status %}
+
+{% load bootstrap_form from bootstrap4 %}
+
+
+{% block form_class %}{% endblock %}
+
+{% block action_url %}
+{% url 'dashboard:update-payments' order_pk=order.pk %}
+{% endblock %}
+
+{% block body_class %}body-orders{% endblock %}
+
+{% block menu_orders_class %}active{% endblock %}
+
+{% block header_menu %}
+  {% url "dashboard:orders" as url %}
+  {% include "dashboard/includes/_back_link.html" with url=url %}
+{% endblock %}
+
+{% block title %}
+  {% trans "Update Payment" context "Modal select product types title" %}
+{% endblock %}
+
+{% block content %}
+  {% bootstrap_form payment_form %}
+{% endblock %}
+
+{% block primary_action %}
+{% trans "Update" context "Dashboard update action" %}
+{% endblock %}
+
+

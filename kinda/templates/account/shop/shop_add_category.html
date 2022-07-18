@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load bootstrap_form from bootstrap4 %}
+{% load materializecss %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "New Shop" context "New address page title" %}
+     — {{ block.super }}
+{% endblock %}
+
+{% block breadcrumb %}
+  <ul class="breadcrumbs list-unstyled">
+    <li>
+      <a href="{% url 'home' %}">
+        {% trans "Home" context "Main navigation item" %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url "account:details" %}">
+        {% trans "Your profile" context "Edit/new address breadcrumb" %}
+      </a>
+    </li>
+    <li>
+        <a href=".">
+          {% trans "New Shop Category" context "New address breadcrumb" %}
+        </a>
+     </li>
+   </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="row account__address-edit">
+    <div class="col-sm-8 col-lg-6 m-auto">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <h2 class="text-center">
+            {% trans "New shop Category" context "New address title" %}
+        </h2>
+        <div class="row">
+                  {{ form.name|materializecss }}
+        </div>
+		<div class="row">
+                  {{ form.shop|materializecss }}
+        </div>
+        <p class="text-right">
+          <button type="submit" class="btn btn-primary narrow">
+            {% trans "Save changes" context "Edit/new address primary action" %}
+          </button>
+        </p>
+      </form>
+    </div>
+  </div>
+{% endblock content %}

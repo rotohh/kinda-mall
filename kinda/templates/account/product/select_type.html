@@ -1,0 +1,22 @@
+{% extends "account/product/product_select_type.html" %}
+
+{% load i18n %}
+{% load materializecss %}
+
+{% block action_url %}
+  {% if shop|length > 1 %}
+    {% url "account:product-add-select-type" shop.pk %}
+  {% endif %}
+{% endblock %}
+
+{% block titletype %}
+  {% trans "Product type" context "Modal select product types title" %}
+{% endblock %}
+
+{% block contenttype %}
+  {{ form|materializecss }}
+{% endblock %}
+
+{% block primary_action %}
+  {% trans "Create" context "Dashboard add action" %}
+{% endblock %}

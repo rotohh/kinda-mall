@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load bootstrap_form from bootstrap4 %}
+{% load i18n %}
+{% load price from taxed_prices %}
+{% load prices_i18n %}
+{% load status %}
+{% load utils %}
+{% load static %}
+
+{% block title %}
+    {% trans "Orders" context "New address page title" %}
+     — {{ block.super }}
+{% endblock %}
+
+{% block breadcrumb %}
+  <ul class="breadcrumbs list-unstyled">
+    <li>
+      <a href="{% url 'home' %}">
+        {% trans "Home" context "Main navigation item" %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url "account:details" %}">
+        {% trans "Your profile" context "Edit/new address breadcrumb" %}
+      </a>
+    </li>
+    <li>
+        <a href=".">
+          {% trans "Orders" context "Edit address breadcrumb" %}
+        </a>
+    </li>
+    
+   </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="row account__address-edit">
+    <div class="col-sm-8 col-lg-6 m-auto">
+      
+        <h2 class="text-center">
+            {% trans "Orders" context "Edit address title" %}
+        </h2>
+        {% if shop %}
+		<div class="row">
+		<div class="col s12 l9">
+		{% if suborders %}
+		  
+          <div class="data-table-container">
+            <table class="bordered highlight responsive data-table last-right-align">
+              <thead>
+                <tr>
+                  {% sorting_header 'pk' '#' %}
+
+                  {% trans "Placed on" context "Orders table header" as label %}
+                  {% sorting_header 'created' label %}
+
+                  {% trans "Customer" context "Orders table header" as label %}
+                  {% sorting_header 'email' label %}
+
+                  {% trans "Payment status" context "Orders table header" as label %}
+                  {% sorting_header 'payment_status' label %}
+
+                  {% trans "Total" context "Orders table header" as label %}
+                  {% sorting_header 'total' label %}
+                </tr>
+              </thead>
+              <tbody>
+            {% for suborder in suborders %}
+			    
+				
+				<tr>
+				<td>
+                     <a href="{% url 'account:shop-order-details' pk=shop.pk sub_order_pk=suborder.pk %}"> #{{ suborder.id }}</a>
+                </td>
+				<td>
+				  {{ suborder.order.created }}
+				</td>
+				{% trans "Guest" context "Anonymous user account value" as guest %}
+				<td>
+				  {{ suborder.order.user|default:guest }}
+				</td>
+				<td>
+				  {% render_status suborder.order.get_payment_status suborder.order.get_payment_status_display %}
+				</td>
+				<td class="right-align">
+				  {% price suborder.get_shopsubtotal display_gross=suborder.order.display_gross_prices %}
+				</td>
+				</tr>
+				
+				
+			{% endfor %}
+			</tbody>
+            </table>
+          </div>
+        
+        <div class="row">
+          {% paginate orders %}
+        </div>
+		{% else %}
+		    <p> NO ORDERS</p>
+		{% endif %}
+		{% endif %}
+      </div>
+	 </div>
+	</div>
+  </div>
+{% endblock content %}

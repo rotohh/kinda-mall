@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% load bootstrap_field from bootstrap4 %}
+{% load bootstrap_form from bootstrap4 %}
+{% load bootstrap_pagination from bootstrap4 %}
+{% load build_absolute_uri from urls %}
+{% load get_object_properties from attributes %}
+{% load get_thumbnail from product_images %}
+{% load materializecss %}
+{% load render_bundle from webpack_loader %}
+{% load price from taxed_prices %}
+{% load get_product_image_thumbnail from product_images %}
+{% load i18n %}
+{% load markdown from markdown %}
+{% load utils %}
+{% load status %}
+{% load placeholder %}
+{% load static %}
+{% load taxed_prices %}
+
+{% block title %}
+  {% if product.seo_title %}
+    {% trans "Shop" context "New address page title" %}-{{ product.translated.seo_title }}
+  {% else %}
+    {% trans "Shop" context "New address page title" %}-{{ product.translated.name }} - {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block meta_tags %}
+  <meta property="og:title" content="{{ product.translated.seo_title|default:product.translated.name }}">
+  <meta property="og:description" content="{{ product.translated.seo_description|default:"" }}">
+  <meta name="description" content="{{ product.translated.seo_description|default:"" }}">
+
+  {% build_absolute_uri request=request location=product.get_absolute_url as product_url %}
+  <meta property="og:url" content="{{ product_url }}">
+  <link rel="canonical" href="{{ product_url }}">
+
+  {% get_product_image_thumbnail product.get_first_image size=510 method="thumbnail" as product_image %}
+  {% if product_image %}
+    <meta property="og:image" content="{{ product_image }}" />
+    <meta property="og:image:width" content="510">
+    <meta property="og:image:height" content="510">
+  {% else %}
+    <meta property="og:image" content="{% static "images/block1.png" %}">
+  {% endif %}
+{% endblock meta_tags %}
+
+{% block breadcrumb %}
+  <ul class="breadcrumbs list-unstyled">
+    <li>
+      <a href="{% url 'home' %}">
+        {% trans "Home" context "Main navigation item" %}
+      </a>
+    </li>
+    <li>
+      <span class="breadcrumbs--ellipsed-item">
+        {{ shop }}
+      </span>
+    </li>
+    <li>
+      <a href="{{ product.get_absolute_url }}">{{ product.translated }}</a>
+    </li>
+  </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="account">
+    <div class="account__nav container">
+	   <h2>{{ shop }}</h2>
+	   {% if shop.description %}<h3 class="text-sm-center"><p> {{shop.description}}</p></h3>{% endif %}
+	   {% if shop.city %}<h3 class="text-sm-center"><p> {{shop.city}}</p></h3>{% endif %}
+	   {% if shop.street_address %}<h3 class="text-sm-center"><p> {{shop.street_address}}</p></h3>{% endif %}
+	   {% if shop.link %}<h3 class="text-sm-center"><p> {{shop.link}}</p></h3>{% endif %}
+	   {% if shop.phone %}<h3 class="text-sm-center"><p>Shop's Phone: {{shop.phone}}</p></h3>{% endif %}
+	    <ul class="nav nav-tabs col-lg-11 m-auto" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#products" role="tab">
+            <h3>{% trans "Home(Product details)" context "User profile tab" %}</h3>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " data-toggle="tab" href="#orders" role="tab">
+            <h3>{% trans "Orders" context "User profile tab" %}</h3>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#payments" role="tab">
+            <h3>{% trans "Order Payments" context "User profile tab" %}</h3>
+          </a>
+        </li>
+		<li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#settings" role="tab">
+            <h3>{% trans "Send Message" context "User profile tab" %}</h3>
+          </a>
+        </li>
+        </ul>
+    </div>   
+    <div class="tab-content col-lg-10 m-auto">
+	  <div class="tab-pane active fade show" id="products" role="tabpanel">
+	   <div id="accordion" role="tablist" aria-multiselectable="true">
+		<div class="home">
+		  
+		  {% if not is_visible %}
+			<div class="alert alert-warning" role="alert">
+			  {% blocktrans trimmed with date=product.available_on|date context "Product details text" %}
+				<strong>Warning!</strong>
+				You are previewing a product that will become visible on <strong>{{ date }}</strong>.
+			  {% endblocktrans %}
+			</div>
+		  {% endif %}
+		  <div class="row product">
+			<script type="application/ld+json">{{ json_ld_product_data|safe }}</script>
+			<div class="col-md-6 col-12 product__gallery">
+			  {% with images=product_images %}
+				{% if images %}
+				  <div id="carousel-example-generic" class="carousel slide">
+					<div class="carousel-inner" role="listbox">
+					  {% for image in images %}
+						<div class="carousel-item{% if forloop.first %} active{% endif %}">
+						  <div class="product-image">
+							<img class="d-block img-fluid lazyload lazypreload"
+								 data-src="{% get_thumbnail image.image method="thumbnail" size=540 %}"
+								 data-srcset="{% get_thumbnail image.image method="thumbnail" size=540 %} 1x, {% get_thumbnail image.image method="thumbnail" size=1080 %} 2x"
+								 alt=""
+								 src="{% placeholder size=540 %}">
+						  </div>
+						</div>
+					  {% endfor %}
+					</div>
+					{% if images|length > 1 %}
+					  <a class="carousel-control-prev" href="#carousel-example-generic" role="button" data-slide="prev">
+						<svg data-src="{% static "images/gallery-arrow.svg" %}" />
+					  </a>
+					  <a class="carousel-control-next" href="#carousel-example-generic" role="button" data-slide="next">
+						<svg data-src="{% static "images/gallery-arrow.svg" %}" />
+					  </a>
+					{% endif %}
+					<ol class="carousel-indicators d-none d-md-block">
+					  {% for image in images %}
+						{% if images|length > 1 %}
+						  <li data-target="#carousel-example-generic" data-slide-to="{{ forloop.counter0 }}"{% if forloop.first %} class="active"{% endif %}>
+							<img data-src="{% get_thumbnail image.image method="thumbnail" size=60 %}"
+								 data-srcset="{% get_thumbnail image.image method="thumbnail" size=60 %} 1x, {% get_thumbnail image.image method="thumbnail" size=120 %} 2x"
+								 alt=""
+								 class="lazyload lazypreload"
+								 src="{% placeholder size=60 %}">
+						  </li>
+						{% endif %}
+					  {% endfor %}
+					</ol>
+				  </div>
+				{% else %}
+				  <img data-src="{% placeholder size=540 %}"
+					   data-srcset="{% placeholder size=540 %} 1x, {% placeholder size=1080 %} 2x"
+					   alt=""
+					   class="img-fluid lazyload lazypreload">
+				{% endif %}
+			  {% endwith %}
+			</div>
+			<div class="col-md-6 col-12 product__info">
+			  <h1 class="product__info__name">
+				{{ product.translated }}
+			  </h1>
+			  {% if shop %}
+			  <h2 class="product__info__name">
+				Sold by: <a href="{% url "shop:shop-details" slug=shop.get_slug shop_pk=shop.pk %}">
+							 {{ shop.shop_name }}
+						 </a>
+			  </h2>
+			  {% endif %}
+			  {% if user.is_staff %}
+				<p>
+				  <a href="{% url "dashboard:product-details" pk=product.pk %}">
+					{% trans "Edit in dashboard" context "Product details link text" %}
+				  </a>
+				</p>
+			  {% endif %}
+			  {% ifequal user product.user %}
+				<p>
+				  <a href="{% url "account:shop-product-details" pk=shop.pk product_pk=product.pk %}">
+					{% trans "Edit in shop" context "Product details link text" %}
+				  </a>
+				</p>		
+			  {% endifequal %}
+			  {% if availability.available %}
+				{% if show_variant_picker %}
+				  <div id="variant-price-component"></div>
+				{% else %}
+				  <h2 class="product__info__price">
+					<span>{% price_range availability.price_range %}</span>
+					{% if availability.on_sale %}
+					  <small class="product__info__price__undiscounted">
+						{% price availability.price_range_undiscounted %}
+					  </small>
+					{% endif %}
+					{% if availability.price_range_local_currency %}
+					  <br>
+					  <small class="text-info">
+						&asymp;
+						{% price availability.price_range_local_currency %}
+					  </small>
+					{% endif %}
+					{% if request.taxes %}
+					  <small>
+						{% tax_rate request.taxes product.tax_rate as tax_rate %}
+						{% if site.settings.display_gross_prices %}
+						  {% blocktrans trimmed with tax_rate=tax_rate context "Product details page vat rate value" %}
+							including {{ tax_rate }}% VAT
+						  {% endblocktrans %}
+						{% else %}
+						  {% blocktrans trimmed with tax_rate=tax_rate context "Product details page vat rate value" %}
+							excluding {{ tax_rate }}% VAT
+						  {% endblocktrans %}
+						{% endif %}
+					  </small>
+					{% endif %}
+				  </h2>
+				{% endif %}
+			  {% endif %}
+			  {% if is_visible and product.is_in_stock %}
+				{% block orderform %}
+				  {% if show_variant_picker %}
+					{% csrf_token %}
+					<div id="variant-picker" data-variant-picker-data="{{ variant_picker_data }}" data-action="{% url 'product:add-to-cart' product_id=product.pk slug=product.get_slug %}"></div>
+				  {% else %}
+					<form id="product-form" role="form" class="product-form clearfix" method="post" action="{% url 'product:add-to-cart' product_id=product.pk slug=product.get_slug %}" novalidate>
+					  {% csrf_token %}
+					  {% bootstrap_field form.variant %}
+					  <div class="product__info__quantity">
+						{% bootstrap_field form.quantity %}
+					  </div>
+
+					  <div class="form-group product__info__button">
+						<button class="btn btn-primary">
+						  {% trans "Add to cart" context "Product details primary action" %}
+						</button>
+					  </div>
+					</form>
+				  {% endif %}
+				{% endblock %}
+				<div class="product__info__form-error">
+				  <small class="text-danger"></small>
+				</div>
+
+			  {% else %}
+				<p class="alert alert-warning">
+				  {% blocktrans context "Product details text" %}This product is currently <strong>unavailable</strong>.{% endblocktrans %}
+				</p>
+			  {% endif %}
+			  <div class="product__info__description">
+				<h3>{% trans "Description" context "Product details title" %}</h3>
+				<hr>
+				{{ product.translated.description|safe }}
+			  </div>
+			  <hr>
+			  <table>
+				{% for attribute, value in product_attributes.items %}
+				  <tr>
+					<td>{{ attribute.translated }}:</td>
+					<td><strong>{{ value.translated }}</strong></td>
+				  </tr>
+				{% endfor %}
+			  </table>
+			</div>
+		  </div>
+		  
+		</div>
+	   </div>
+	  </div>   
+	  <div class="tab-pane fade" id="orders" role="tabpanel">
+		<div id="accordion" role="tablist" aria-multiselectable="true">
+		 
+		  {% if my_orders %}
+            <div class="table__header">
+              <div class="row">
+                <div class="col-md-1 col-3">
+                  <small>{% trans "Order" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-3 d-none d-md-block">
+                  <small>{% trans "Placed On" context "Recent orders column title" %}</small>
+                </div>
+				<div class="col-md-3 d-none d-md-block">
+                  <small>{% trans "Customer" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-1 col-4 text-right">
+                  <small>{% trans "Total" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-3 d-none d-md-block">
+                  <small>{% trans "Payment Status" context "Recent orders column title" %}</small>
+                </div>
+                <div class="col-md-1 col-5"></div>
+              </div>
+            </div>
+            {% for my_order in my_orders %}
+              <div class="table__row">
+                <div class="row">
+                  <div class="col-md-1 col-3">
+                    {{ my_order.id }}
+                  </div>
+                  <div class="col-md-3 d-none d-md-block">
+                    {{ my_order.order.created }}
+                  </div>
+				  <div class="col-md-3 d-none d-md-block">
+                    {% trans "Guest" context "Anonymous user account value" as guest %}
+					  {{ my_order.order.user|default:guest }}
+				  </div>
+                  <div class="col-md-1 col-4">
+                    <span class="float-right">
+					    {% price my_order.amount.gross %}
+                    </span>
+                  </div>
+                  <div class="col-md-3 d-none d-md-block">
+                    {% render_status my_order.order.get_payment_status my_order.order.get_payment_status_display %}
+                  </div>
+                  <div class="col-md-1 col-5">
+                    <a href="" class="float-right link--styled">
+                      {% trans "Details" context "Recent orders link text" %}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+            <div class="row mt-4">
+              <div class="m-auto">
+                {% if my_orders.has_other_pages %}
+                  {% bootstrap_pagination my_orders extra=request.GET.urlencode %}
+                {% endif %}
+              </div>
+            </div>
+          {% else %}
+            <h3 class="text-sm-center account__orders-empty">
+              {% trans "There are not any completed orders yet." context "No recent orders text" %}
+            </h3>
+          
+		  {% endif %}
+        </div>
+	  </div>
+	  <div class="tab-pane fade" id="payments" role="tabpanel">
+		<div class="row ">
+		  <div class="col-md-8 col-lg-6 m-auto account__password">
+			  <h3 class="text-sm-center account__orders-empty">
+              {% trans "Please follow up with contacts given by the shop owner." context "No recent orders text" %}
+              </h3>
+			  
+		  </div>
+		</div>
+	  </div>
+	  <div class="tab-pane fade" id="settings" role="tabpanel">
+		
+		     <div class="row account__address-edit">
+				<div class="col-sm-8 col-lg-6 m-auto">
+				  <h3 class="text-sm-center account__orders-empty">
+                   {% trans "Please follow up with contacts given by the shop owner" context "No recent orders text" %}
+                  </h3>
+				</div>
+			  </div>
+		  
+	  </div>	
+    </div>
+ </div>
+
+
+{% endblock content %}

@@ -1,0 +1,89 @@
+{% extends "dashboard/base.html" %}
+{% load babel %}
+{% load dashboard %}
+{% load i18n %}
+{% load i18n_address_tags %}
+{% load materializecss %}
+{% load static %}
+{% load status %}
+
+{% block title %}
+  {% trans "Fulfill" context "Dashboard order fulfillment" %} {{ order }} - {% trans "Orders" context "Dashboard orders list" %} - {{ block.super }}
+{% endblock %}
+
+{% block body_class %}body-orders{% endblock %}
+
+{% block menu_orders_class %}active{% endblock %}
+
+{% block header_menu %}
+  {% url "dashboard:orders" as url %}
+  {% include "dashboard/includes/_back_link.html" with url=url %}
+{% endblock %}
+
+{% block breadcrumbs %}
+  <ul class="breadcrumbs breadcrumbs--history">
+    <li>
+      <a href="{% url "dashboard:orders" %}">
+        {% trans "Orders" context "Dashboard orders list" %}
+      </a>
+    </li>
+    <li class="back-mobile">
+      <a href="{% url "dashboard:orders" %}">
+        <svg data-src="{% static "dashboard/images/arrow-left.svg" %}" fill="#fff" width="20px" height="20px" />
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'dashboard:order-details' order_pk=order.pk %}" class="breadcrumbs--ellipsed-item">
+        {{ order }}
+      </a>
+    </li>
+	<li>
+      <a>
+        {% trans "SubOrder" context "Dashboard orders list" %}
+      </a>
+    </li>
+	<li>
+      <a>
+        {{ suborder.id }}
+      </a>
+    </li>
+    <li>
+      <span>
+        {% trans "Update" context "Dashboard order fulfillment" %}
+      </span>
+    </li>
+  </ul>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col s12 l8">
+    <form role="form" class="card" method="post" novalidate>
+    {% csrf_token %}
+    
+      <div class="card shipment-table">
+        <div class="data-table-header">
+          <div class="data-table-title">
+            <h5>
+              {% trans "Update SubOrder" context "Fulfill order title" %}
+            </h5>
+          </div>
+        </div>
+		{{ suborder_update_form }}
+        <div class="data-table-container">
+          
+        </div>
+        
+        <div class="data-table-action right-align">
+          <a href="{% url 'dashboard:order-details' order.pk %}" class="btn-flat waves-effect">
+            {% trans "Cancel" context "Dashboard cancel action" %}
+          </a>
+          <button type="submit" class="btn waves-effect">
+            {% trans "Update" context "Dashboard update action" %}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
